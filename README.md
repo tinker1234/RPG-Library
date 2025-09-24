@@ -209,7 +209,16 @@ total_defense = character.get_total_defense()  # Includes status effect bonuses/
 
 ### Creating Custom Status Effect Abilities
 
+You can create abilities that apply status effects upon use in several ways:
+
+#### Using AbilityFactory.create_status_effect_ability()
+
+The easiest way to create abilities with status effects is using the factory method:
+
 ```python
+from rpg_core import StatusEffectType, AbilityType
+from rpg_factory import AbilityFactory
+
 # Create a custom poison ability
 custom_poison = AbilityFactory.create_status_effect_ability(
     name="Deadly Venom",
@@ -234,6 +243,83 @@ strength_buff = AbilityFactory.create_status_effect_ability(
     description="Increases attack power temporarily"
 )
 strength_buff.ability_type = AbilityType.BUFF  # Make it a buff ability
+```
+
+#### Manual Ability Creation with Status Effects
+
+You can also create abilities manually by setting the status_effect parameter:
+
+```python
+from rpg_core import Ability, StatusEffect, StatusEffectType, AbilityType
+
+# Create the status effect first
+burn_effect = StatusEffect(
+    name="Burning Flames",
+    effect_type=StatusEffectType.BURN,
+    duration=3,
+    power=6,  # Damage per turn
+    description="Burns the target with magical flames"
+)
+
+# Create the ability with the status effect
+fire_spell = Ability(
+    name="Flame Bolt",
+    ability_type=AbilityType.ATTACK,
+    power=20,  # Initial damage
+    mana_cost=10,
+    description="A bolt of fire that burns the target",
+    cooldown=1,
+    status_effect=burn_effect  # Attach the status effect
+)
+
+# The ability will now apply the burn effect when used
+```
+
+#### Pre-made Status Effect Abilities
+
+The AbilityFactory provides many pre-made abilities with status effects:
+
+```python
+# Damage over time abilities
+poison_dart = AbilityFactory.poison_dart()      # Poison effect
+flame_strike = AbilityFactory.flame_strike()    # Burn effect
+
+# Crowd control abilities
+ice_shard = AbilityFactory.ice_shard()          # Freeze effect
+stunning_blow = AbilityFactory.stunning_blow()  # Stun effect
+
+# Debuff abilities
+weakness_curse = AbilityFactory.weakness_curse()  # Reduces attack
+armor_break = AbilityFactory.armor_break()       # Reduces defense
+
+# Buff abilities
+battle_cry = AbilityFactory.battle_cry()        # Increases attack
+shield_wall = AbilityFactory.shield_wall()      # Increases defense
+```
+
+#### Status Effect Parameters Explained
+
+When creating status effect abilities, these parameters control the effect:
+
+- **power**: Base damage/healing of the ability itself
+- **status_effect_type**: Type of status effect to apply
+- **effect_duration**: How many turns the effect lasts
+- **effect_power**: Strength of the status effect (damage per turn, stat bonus, etc.)
+- **cooldown**: Turns before the ability can be used again
+
+```python
+# Example: Create a powerful regeneration ability
+healing_aura = AbilityFactory.create_status_effect_ability(
+    name="Healing Aura",
+    power=25,  # Immediate healing
+    mana_cost=20,
+    status_effect_type=StatusEffectType.REGENERATION,
+    effect_duration=6,  # Heals for 6 turns
+    effect_power=12,    # Heals 12 HP per turn
+    cooldown=5,
+    description="Provides immediate healing and regeneration over time"
+)
+healing_aura.ability_type = AbilityType.HEAL  # Set as healing ability
 ```
 
 ## Combat System
