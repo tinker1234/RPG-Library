@@ -169,17 +169,95 @@ boss = EnemyFactory.create_custom_enemy(
 )
 ```
 
-## Combat System
+## Status Effects System
 
-The library includes a flexible combat system:
+The library includes a comprehensive status effects system that adds depth to combat:
+
+### Available Status Effects
+
+- **Damage Over Time**: `POISON`, `BURN` - Deal damage each turn
+- **Crowd Control**: `FREEZE`, `STUN` - Prevent actions for duration
+- **Stat Modifiers**: `STRENGTH_BOOST`, `WEAKNESS` - Modify attack power
+- **Defense Modifiers**: `DEFENSE_BOOST`, `VULNERABILITY` - Modify defense
+- **Healing Over Time**: `REGENERATION` - Restore HP each turn
+
+### Using Status Effects
 
 ```python
-# Basic combat flow
+# Create abilities that apply status effects
+poison_dart = AbilityFactory.poison_dart()  # Applies poison
+flame_strike = AbilityFactory.flame_strike()  # Applies burn
+ice_shard = AbilityFactory.ice_shard()  # Can freeze target
+battle_cry = AbilityFactory.battle_cry()  # Self-buff for attack
+
+# Status effects are automatically applied when abilities are used
+result = poison_dart.use(player, enemy)  # Enemy gets poisoned
+
+# Check for status effects
+if enemy.has_status_effect(StatusEffectType.POISON):
+    print("Enemy is poisoned!")
+
+# Process status effects each turn
+messages = character.process_status_effects()
+for message in messages:
+    print(message)  # Shows damage, healing, or effect expiration
+
+# Status effects modify stats automatically
+total_attack = character.get_total_attack()  # Includes status effect bonuses/penalties
+total_defense = character.get_total_defense()  # Includes status effect bonuses/penalties
+```
+
+### Creating Custom Status Effect Abilities
+
+```python
+# Create a custom poison ability
+custom_poison = AbilityFactory.create_status_effect_ability(
+    name="Deadly Venom",
+    power=15,  # Base damage of the ability
+    mana_cost=12,
+    status_effect_type=StatusEffectType.POISON,
+    effect_duration=4,  # Lasts 4 turns
+    effect_power=8,  # Deals 8 poison damage per turn
+    cooldown=2,
+    description="A potent poison that deals damage over time"
+)
+
+# Create a buff ability
+strength_buff = AbilityFactory.create_status_effect_ability(
+    name="Berserker Rage",
+    power=0,  # No immediate damage
+    mana_cost=15,
+    status_effect_type=StatusEffectType.STRENGTH_BOOST,
+    effect_duration=5,
+    effect_power=10,  # +10 attack for 5 turns
+    cooldown=8,
+    description="Increases attack power temporarily"
+)
+strength_buff.ability_type = AbilityType.BUFF  # Make it a buff ability
+```
+
+## Combat System
+
+The library includes a flexible combat system with status effect integration:
+
+```python
+# Basic combat flow with status effects
 if ability.can_use(player):
     result = ability.use(player, enemy)
     print(result)
 
-# Enemy AI chooses abilities automatically
+# Process status effects each turn
+player_effects = player.process_status_effects()
+enemy_effects = enemy.process_status_effects()
+
+# Status effects can prevent actions
+if not player.is_action_prevented():  # Check for stun/freeze
+    # Player can act normally
+    pass
+else:
+    print(f"{player.name} is unable to act due to status effects!")
+
+# Enemy AI considers status effects when choosing abilities
 enemy_ability = enemy.ai_choose_ability(player)
 if enemy_ability:
     result = enemy_ability.use(enemy, player)
